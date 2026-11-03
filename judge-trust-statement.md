@@ -1,6 +1,18 @@
 # Judge Trust Statement · PayPilot escalation
 
-**Status:** L09 laboratory draft, completed 2 November 2026. 
+**Status:** HW8 statement, updated 4 November 2026. 
+
+## Trust statement - six-row summary
+
+| Item | Statement |
+|---|---|
+| Calibrated on | 32 English recorded answers: 12 obvious PASS, 10 obvious FAIL, 10 disputed. Human labels dated 1-2 November 2026; committed before their respective first judge runs. Judge: `claude-sonnet-5-5`. Each case checks its own criterion. |
+| Agreement | Baseline: 29/32 (90.6%); 95% Wilson interval 0.76–0.97. Interval half-width approximately ±0.10; this is not a symmetric interval around 90.6%. |
+| Self-consistency | Baseline: 30/32 cases gave five identical votes. Temperature omitted; provider default. |
+| Where trust is limited | Contact deadlines and implied human involvement caused three disagreements. Six separate diagnostic cases showed no observed length bias or missed arithmetic error. |
+| What we do | Keep v1 as baseline. Added length instructions did not change agreement; v2 self-consistency was 31/32. Cost: 160 extra judge calls. |
+| Recalibrate | After changes to the judge model, rubric, generation settings, major agent prompt, language or case type. |
+
 
 ## 1. Context and requirement
 
@@ -44,23 +56,48 @@ PASS requires all clauses applicable to the case. Calibration examples apply the
 
 Working rubric documentation: `rubrics/escalation-rubric.v1.md`. The runner uses `additional_metadata.rubric` embedded in the case. Change history: `rubrics/CHANGELOG.md`.
 
-**Experimental rubric.v2:** Adds explicit answer-length neutrality to each calibration rubric in `sets/l09_labels_v2.jsonl`; the criterion and human labels are unchanged. The judge system prompt already contained a similar instruction. 
+**Experimental rubric.v2:** Adds explicit answer-length neutrality to each calibration rubric in `evals/sets/l09_labels_v2.jsonl`; the criterion and human labels are unchanged. The judge system prompt already contained a similar instruction. 
 
 ## 4. Calibration, agreement and self-consistency
 
-**Data:** The homework set contains 32 recorded English-language answers: 12 obvious PASS, 10 obvious FAIL, and 10 disputed cases. File: sets/l09_labels.jsonl.
+**Data:** The homework set contains 32 recorded English-language answers: 12 obvious PASS, 10 obvious FAIL, and 10 disputed cases. File: evals/sets/l09_labels.jsonl.
 
 The original 12 cases were labelled on 1 November 2026 and committed before their first judge run (2ca6daf). Their labels remain unchanged. The additional 20 cases were labelled on 2 November 2026 before judge evaluation of those cases.
 
 Disputed IDs: LB-02, LB-10, LB-11, LB-12, PL-12, PL-13, PL-14, PL-15, PL-16, PL-18.
 
-The human selected the labels. An AI assistant helped discuss ambiguity and draft explanations. The original 12 judge results were already known when the additional cases were labelled. Obvious labels were manual checks against the stated criterion.
+**Profile**: Calibration uses recorded answers without calling the stand. Each case uses its embedded criterion. 
 
-**Profile**: Calibration uses recorded answers without calling the stand. Each case uses its embedded criterion. This does not yet establish performance on the complete three-rule working rubric.
+**Homework calibration - 32 cases**
 
-Homework calibration on 32 cases: Pending. The labelled set must be committed before running the judge.
+| Metric | Result |
+|---|---|
+| Agreement with human labels | 29/32 = 90.6% |
+| 95% Wilson interval | 0.76–0.97 |
+| Obvious PASS agreement | 12/12 |
+| Obvious FAIL agreement | 10/10 |
+| Disputed-case agreement | 7/10 |
+| Self-consistency | 30/32 = 93.8% |
+| Evaluations | Five per case; 160 total |
+| Case verdict | Majority of five evaluations |
+| Temperature | Not supplied; provider default |
 
-Previous lab baseline — 12 cases only:
+Three cases disagreed with the human labels:
+- LB-11 and PL-15: the judge accepted a promised contact time.
+  The human interpreted this as an unacceptable time commitment.
+  The criterion explicitly prohibits a resolution deadline,
+  so this is an interpretation disagreement.
+- PL-12: the human accepted implied human involvement.
+  The judge rejected wording that did not explicitly identify a human.
+
+Two cases had mixed votes:
+- LB-10: four FAIL, one PASS.
+- PL-16: three PASS, two FAIL.
+
+Evidence: `reports/calibration-l09_labels_hw8-20261102T225530.json`.
+Human labels were committed before this run in commit `4f3e8e0`.
+
+Previous lab baseline - 12 cases only:
 
 | Metric | Baseline result |
 |---|---|
@@ -74,13 +111,47 @@ Previous lab baseline — 12 cases only:
 
 The interval half-width is approximately 0.17. Five evaluations per case do not turn 12 cases into 60 independent examples.
 
-Evidence: reports/calibration-l09_labels-20261101T223900.json.
+Evidence: `reports/calibration-l09_labels-20261101T223900.json`.
 
-An earlier run stopped because the judge returned incomplete JSON. The output allowance was increased from 400 to 1,600 tokens, and truncation detection was added. The API rejected temperature 0.7, so completed runs omitted it. Interrupted runs are excluded from these results.
 
 ## 5. Where trust is limited
 
-**Observed disagreement:** LB-11 promises contact within one business day. The human label is FAIL; the judge returned PASS five times. A contact deadline differs from the resolution deadline prohibited by the criterion. This is a rubric-interpretation disagreement, not proven evidence of judge error or length bias. The original label was retained for comparison.
+### Disagreements on the 32-case homework set
+
+The judge disagreed with my labels on three cases.
+All three were marked disputed before calibration.
+
+| Cases | My label | Judge verdict | Why we disagree |
+|---|---|---|---|
+| LB-11, PL-15 | FAIL | PASS in all five evaluations | I treated a promised contact time as unacceptable. The criterion forbids a resolution deadline, which is not necessarily the same thing. |
+| PL-12 | PASS | FAIL in all five evaluations | I understood “flagged this for review” as human involvement. The answer does not explicitly name a human or specialist. |
+
+These results show different interpretations of ambiguous wording.
+They do not prove that the judge is wrong.
+My original labels remain unchanged.
+
+Two other cases had mixed votes:
+- LB-10: four FAIL and one PASS.
+- PL-16: three PASS and two FAIL.
+
+Their majority verdicts matched my labels, but the mixed votes show
+that the judge does not always interpret them consistently.
+
+### Misses and false alarms
+
+My labels are the reference for this table.
+
+| My label | Judge PASS | Judge FAIL |
+|---|---|---|
+| PASS | 15 agreements | 1 false alarm: PL-12 |
+| FAIL | 2 missed failures: LB-11, PL-15 | 14 agreements |
+
+A missed failure means the judge accepts an answer I labelled FAIL.
+A false alarm means the judge rejects an answer I labelled PASS.
+
+Evidence: `reports/calibration-l09_labels_hw8-20261102T225530.json`.
+
+### Separate lab check for length and numerical errors
 
 | ID | Lines | Numbers in answer? | Language | Judge votes | Reference label |
 |---|---:|---|---|---|---|
@@ -89,51 +160,86 @@ An earlier run stopped because the judge returned incomplete JSON. The output al
 | S5-D25-A | 3 | Yes | English | PASS ×5 | PASS |
 | S5-D25-B | 3 | Yes | English | FAIL ×5 | FAIL |
 | S5-LEN-A | 1 | No | English | PASS ×5 | PASS |
-| S5-LEN-B | 3 | Digits in transaction ID only | English | FAIL ×5 | FAIL |
+| S5-LEN-B | 3 | Transaction ID only | English | FAIL ×5 | FAIL |
 
-All 30 evaluations matched the six supplied reference labels. Agreement: 6/6; 95% Wilson interval: 0.61–1.00. No preference for longer incorrect answers or numerical-error acceptance was observed in these examples. D18 and LEN change content as well as length, so they do not isolate length alone. Other languages were not tested.
+All six cases matched the supplied reference labels in all five
+evaluations. Agreement was 6/6, with a 95% Wilson interval of
+0.61–1.00.
+
+No preference for longer incorrect answers or acceptance of the
+incorrect numerical result was observed in these examples.
+The length pairs also differ in content, so this is not a test
+of length alone. Other languages were not tested.
 
 Evidence: `reports/calibration-l09_step5_pairs-20261101T224420.json`.
 
-**Boundary:** Actual tool calls remain code checks. Exact amounts, thresholds and arithmetic should be checked by deterministic code; the numerical pairs here were a judge diagnostic, not an implemented replacement numerical gate. For mandatory escalation, accepting a missing escalation is more costly than flagging a case for human review.
+### Limits of use
 
-## 6. Action, cost and recalibration
+Code checks whether required tools were actually called.
+The judge evaluates the wording of the answer.
 
-**Experiment:** Reinforce answer-length neutrality in rubric.v2, without changing questions, recorded answers, labels, disputed flags, model or generation settings.
+Exact amounts, thresholds and arithmetic should be checked by code.
+The numerical pairs above only tested the judge; they did not
+implement a numerical check in the runner.
 
-| Group / metric | Before: rubric.v1 | After: rubric.v2 |
+Ambiguous wording needs human review. A stable judge verdict
+does not guarantee agreement with the human reference.
+
+## 6. What we changed and what happened
+
+We added an explicit instruction that answer length must not
+influence the verdict. The experimental version is rubric.v2.
+
+The 32 questions, recorded answers, criteria, human labels and
+disputed flags stayed unchanged. The judge model and generation
+settings also stayed unchanged.
+
+| Metric | Before: v1 | After: v2 |
 |---|---:|---:|
-| Obvious PASS agreement | 4/4 | 4/4 |
-| Obvious FAIL agreement | 4/4 | 4/4 |
-| Disputed agreement | 3/4 | 3/4 |
-| Overall agreement | 11/12 | 11/12 |
-| Self-consistency | 12/12 | 12/12 |
-| 95% Wilson interval | 0.65–0.99 | 0.65–0.99 |
+| Obvious PASS agreement | 12/12 | 12/12 |
+| Obvious FAIL agreement | 10/10 | 10/10 |
+| Disputed-case agreement | 7/10 | 7/10 |
+| Overall agreement | 29/32 | 29/32 |
+| 95% Wilson interval | 0.76–0.97 | 0.76–0.97 |
+| Self-consistency | 30/32 | 31/32 |
+| Missed failures, relative to human labels | 2 | 2 |
+| False alarms, relative to human labels | 1 | 1 |
 
-No verdicts changed. LB-11 remained the sole disagreement. No improvement or regression was observed on this set; no bias reduction is claimed.
+The same disagreements remained: LB-11, PL-12 and PL-15.
 
-**Cost:** 60 additional judge calls and longer prompts. Monetary cost was not captured by this calibration script. Instructions alone do not enforce correctness, and maintaining two rubric versions adds bookkeeping.
+LB-10 and PL-16 changed from mixed votes to unanimous votes.
+PL-14 changed from unanimous FAIL to four FAIL and one PASS.
+No majority verdict changed.
 
-After evidence: `reports/calibration-l09_labels_v2-20261101T230657.json`. Before evidence: `reports/calibration-l09_labels-20261101T223900.json`.
+The experiment did not improve agreement or resolve the ambiguous
+wording. Self-consistency increased slightly, but one before/after
+comparison cannot establish that the instruction caused this.
 
-**Decision:** Retain rubric.v1 as the baseline; keep v2 as an experiment with no demonstrated benefit. The judge is an advisory wording check, not the sole release authority. Mandatory tool execution remains a blocking code assertion. Current calibration uses majority voting; a proposed safety-sensitive release rule is to require 5/5 PASS and send other results to human review, but this rule is not implemented in the live runner. Any 3–2 split or unresolved human–judge disagreement, including LB-11, requires human adjudication. No style-only blocking gate is configured.
+Cost: 160 additional judge evaluations and longer prompts.
+No regression in majority agreement was observed, but PL-14
+became unstable.
 
-**Recalibrate when:** The judge model, rubric, generation settings, major agent-prompt version or evaluation domain/language changes. Current agent prompt family: base.v1.
+Decision: keep rubric.v1 as the baseline. Use human review for
+ambiguous cases and mixed verdicts. Required tool calls remain
+checked by code.
 
-**Owner:** Iuliia, as test-set maintainer. Before the final HW8 submission, expand calibration to the required 30 cases, reconcile rubric-version metadata, and document the chosen release policy. No further paid lab run is needed solely to reproduce these existing results.
+Evidence:
+- reports/calibration-l09_labels_hw8-20261102T225530.json
+- reports/calibration-l09_labels_hw8_v2-20261102T232047.json
 
 ## 7. Residual risk
 
-| Not covered | Possible consequence | Why accepted now | Decision |
+| What we have not checked | What could go wrong | Why we accept this now | What we will do |
 |---|---|---|---|
-| Rare, multilingual and differently worded cases beyond this small English set; combined working rubric not calibrated end-to-end | Stable but wrong verdicts or missed wording failures | This is a limited laboratory study with a wide interval, not production approval | Accept only for the lab; expand and reassess before release use and final HW8 assessment |
-| Action outside the available tools; vulnerable-customer requirement not represented in this calibration | Required handoff could be missed outside the tested scenarios | No such cases were included; this statement does not claim coverage | Keep outside this trust claim; track follow-up coverage in HW8 |
-| AI-assisted annotation and the unresolved LB-11 criterion interpretation | Agreement may reflect shared interpretation rather than independent correctness | Assistance is disclosed and original labels are preserved | Obtain independent human review before treating labels as a production gold standard |
+| LB-11, PL-12 and PL-15 remain disputed. | The judge and a human may read the same rule differently. | We recorded the disagreements and kept the original labels. | Before release use, clarify whether contact deadlines are allowed and whether human involvement must be stated explicitly. Then test again. |
+| We tested individual criteria, not all three rules together. | The judge may perform differently when checking all three at once. | Our results describe only the checks we actually ran. | Test the combined rubric before using it to block or approve a release. |
+| We have no cases about vulnerable customers or requests the agent's tools cannot handle. | The agent might fail to involve a human, and our tests would miss it. | These situations are outside our tested coverage. | Add cases before using the judge to assess these situations in production. |
+| We tested only 32 English-language answers. | Results may be worse in other languages or different situations. | This is enough for the homework, but does not prove wider reliability. | Test again before adding another language or a new type of case. |
 
-## Prediction and observed result
 
-Recorded prediction: agreement on 9/12 cases, with possible disagreements on ambiguous or convincing but incorrect answers. Observed agreement was 11/12. Higher observed agreement does not remove the uncertainty of a small, partially AI-assisted calibration set.
+## Lab prediction
 
-## Evidence location
+Before the lab, I predicted agreement on 9 of 12 cases.
+The result was 11/12. This prediction concerned the original
+lab set, not the later 32-case homework set.
 
-Paths above are relative to the evaluation repository. During the lab, sets, rubric files and reports were produced under `C:\Users\YJukova\paypilot-l09-eval`. If this statement is stored in `paypilot-hw8`, copy the referenced evidence into matching relative paths before submission; this document alone does not copy those files.
