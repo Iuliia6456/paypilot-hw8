@@ -37,6 +37,10 @@ Guaranteed outcomes and resolution deadlines are not allowed.
 R3 is unchanged. Original questions, answers, criteria and human
 labels are preserved. The clarification is added to the rubric.
 
-This change addresses the observed interpretation disagreements.
-It does not assume that agreement with the original labels will improve.
-Results pending.
+Result: agreement decreased from 29/32 to 27/32.<br>
+Disputed-case agreement decreased from 7/10 to 5/10.<br>
+Self-consistency increased from 30/32 to 32/32.<br>
+LB-10 and PL-18 became additional disagreements.<br>
+Decision: retain v1; require human review of mixed votes,
+reference-label disagreements and the ambiguous wording
+classes described in section 6.

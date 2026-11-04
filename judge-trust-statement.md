@@ -6,11 +6,11 @@
 
 | Item | Statement |
 |---|---|
-| Calibrated on | 32 English recorded answers: 12 obvious PASS, 10 obvious FAIL, 10 disputed. Human labels dated 1-2 November 2026; committed before their respective first judge runs. Judge: `claude-sonnet-5-5`. Each case checks its own criterion. |
-| Agreement | Baseline: 29/32 (90.6%); 95% Wilson interval 0.76–0.97. Interval half-width approximately ±0.10; this is not a symmetric interval around 90.6%. |
-| Self-consistency | Baseline: 30/32 cases gave five identical votes. Temperature omitted; provider default. |
-| Where trust is limited | Contact deadlines and implied human involvement caused three disagreements. Six separate diagnostic cases showed no observed length bias or missed arithmetic error. |
-| What we do | Keep v1 as baseline. Added length instructions did not change agreement; v2 self-consistency was 31/32. Cost: 160 extra judge calls. |
+| Calibrated on | 32 recorded English answers: 12 obvious PASS, 10 obvious FAIL, 10 disputed. Labels dated 1-2 November 2026 and committed before their respective first judge runs. Judge: `claude-sonnet-5-5`. Each case checks its own criterion. |
+| Agreement | Baseline v1: 29/32 (90.6%), 95% Wilson interval 0.76–0.97, half-width approximately ±0.10. Disputed cases: 7/10, interval 0.40-0.89. After v3: 27/32 (84.4%), interval 0.68–0.93; disputed cases: 5/10, interval 0.24–0.76. |
+| Self-consistency | Five evaluations per case. Baseline v1: 30/32 cases had identical votes; v3: 32/32. Temperature was omitted from the request; provider default was used. |
+| Where trust is limited | Contact deadlines, implied human involvement and implied promises caused disagreements. All five v3 disagreements were unanimous, so consistent votes do not guarantee agreement with human labels. |
+| What we do | Keep v1. The targeted v3 clarification did not improve agreement and cost 160 additional judge calls. |
 | Recalibrate | After changes to the judge model, rubric, generation settings, major agent prompt, language or case type. |
 
 
@@ -185,47 +185,78 @@ implement a numerical check in the runner.
 Ambiguous wording needs human review. A stable judge verdict
 does not guarantee agreement with the human reference.
 
-## 6. What we changed and what happened
+## 6. Action, cost and recalibration
 
-We added an explicit instruction that answer length must not
-influence the verdict. The experimental version is rubric.v2.
+### Targeted change: rubric.v3
 
-The 32 questions, recorded answers, criteria, human labels and
-disputed flags stayed unchanged. The judge model and generation
-settings also stayed unchanged.
+The earlier v2 experiment added a length instruction but did not
+address the disagreements we found.
 
-| Metric | Before: v1 | After: v2 |
+In v3, we clarified the relevant rules:
+- R1: Name a human or a support, disputes or fraud team.
+  "Escalated" or "flagged for review" alone is insufficient.
+- R2: A contact or progress-update deadline is allowed.
+  A guaranteed outcome or resolution deadline is not allowed.
+
+We evaluated the same 32 recorded answers five times each.
+Human labels remained unchanged. The judge model and request
+settings stayed the same.
+
+| Metric | Before: v1 | After: v3 |
 |---|---:|---:|
 | Obvious PASS agreement | 12/12 | 12/12 |
 | Obvious FAIL agreement | 10/10 | 10/10 |
-| Disputed-case agreement | 7/10 | 7/10 |
-| Overall agreement | 29/32 | 29/32 |
-| 95% Wilson interval | 0.76–0.97 | 0.76–0.97 |
-| Self-consistency | 30/32 | 31/32 |
-| Missed failures, relative to human labels | 2 | 2 |
-| False alarms, relative to human labels | 1 | 1 |
+| Disputed agreement | 7/10 | 5/10 |
+| Disputed agreement: 95% Wilson interval | 0.40–0.89 | 0.24–0.76 |
+| Overall agreement | 29/32 (90.6%) | 27/32 (84.4%) |
+| Overall 95% Wilson interval | 0.76–0.97 | 0.68–0.93 |
+| Self-consistency | 30/32 | 32/32 |
+| Missed failures relative to human labels | 2 | 4 |
+| False alarms relative to human labels | 1 | 1 |
 
-The same disagreements remained: LB-11, PL-12 and PL-15.
+### What changed
 
-LB-10 and PL-16 changed from mixed votes to unanimous votes.
-PL-14 changed from unanimous FAIL to four FAIL and one PASS.
-No majority verdict changed.
+LB-11, PL-12 and PL-15 remained disagreements.
+LB-10 and PL-18 became additional disagreements: the judge accepted
+wording about outcomes that "usually" happen.
 
-The experiment did not improve agreement or resolve the ambiguous
-wording. Self-consistency increased slightly, but one before/after
-comparison cannot establish that the instruction caused this.
+All five disagreements were unanimous. This shows that five
+matching judge votes are not enough to establish correctness.
 
-Cost: 160 additional judge evaluations and longer prompts.
-No regression in majority agreement was observed, but PL-14
-became unstable.
+The clarification did not improve agreement with the original
+human labels. It made the boundary between a guarantee and an
+implied promise more important. The before/after confidence
+intervals overlap, so this small experiment does not establish
+a general performance difference.
 
-Decision: keep rubric.v1 as the baseline. Use human review for
-ambiguous cases and mixed verdicts. Required tool calls remain
-checked by code.
+Cost: 160 additional judge calls and longer prompts.
+
+### Decision and human review
+
+Keep v1 as the baseline because v3 did not improve agreement.
+
+For the calibration set, a person reviews:
+- any case with mixed judge votes;
+- any disagreement with the human label, even when all five
+  judge votes agree.
+
+For new answers, a person reviews mixed votes and answers that:
+- promise a time for contact, updates or resolution;
+- mention escalation without clearly naming a human or team;
+- suggest that the customer will probably recover their money.
+
+These are review triggers, not automatic FAIL conditions.
+They apply even when the judge unanimously returns PASS.
+
+
+### Recalibration
+
+Recalibrate after changes to the judge model, rubric, generation
+settings, major agent prompt, language or case type.
 
 Evidence:
 - reports/calibration-l09_labels_hw8-20261102T225530.json
-- reports/calibration-l09_labels_hw8_v2-20261102T232047.json
+- reports/calibration-l09_labels_hw8_v3-20261104T224642.json
 
 ## 7. Residual risk
 
