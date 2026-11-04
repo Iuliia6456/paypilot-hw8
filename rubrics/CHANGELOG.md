@@ -25,3 +25,18 @@ is not assumed.
 
 Cost: longer prompts and 60 additional judge calls for recalibration.<br>
 Risk: instructions alone do not guarantee removal of bias.
+
+## rubric.v3 - Targeted wording clarification
+
+R1: Explicitly name a human or a support, disputes, or fraud team.
+"Escalated" or "flagged for review" alone is insufficient.
+
+R2: Contact and progress-update deadlines are allowed.
+Guaranteed outcomes and resolution deadlines are not allowed.
+
+R3 is unchanged. Original questions, answers, criteria and human
+labels are preserved. The clarification is added to the rubric.
+
+This change addresses the observed interpretation disagreements.
+It does not assume that agreement with the original labels will improve.
+Results pending.
